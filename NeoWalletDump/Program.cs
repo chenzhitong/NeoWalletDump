@@ -98,20 +98,37 @@ namespace NeoWalletDump
 
             using (WalletDataContext ctx = new WalletDataContext(db3Path))
             {
-                WriteTableName("Key");
-                var PasswordHash = ReadSqlitItem(ctx, "PasswordHash");
-                var IV = ReadSqlitItem(ctx, "IV");
-                var MasterKey = ReadSqlitItem(ctx, "MasterKey").AesDecrypt(passwordKey, IV);
+                {
+                    WriteTableName("Key");
+                    var PasswordHash = ReadSqlitItem(ctx, "PasswordHash");
+                    var IV = ReadSqlitItem(ctx, "IV");
+                    var MasterKey = ReadSqlitItem(ctx, "MasterKey").AesDecrypt(passwordKey, IV);
 
-                DumpSqliteColumn(nameof(PasswordHash), PasswordHash);
-                DumpSqliteColumn(nameof(IV), IV);
-                DumpSqliteColumn(nameof(MasterKey), MasterKey);
-
-                WriteTableName("Account");
-                var PublicKeyHash = ctx.Accounts.SingleOrDefault().PublicKeyHash;
-                DumpSqliteColumn(nameof(PublicKeyHash), PublicKeyHash);
-                var PrivateKeyEncrypted = ctx.Accounts.SingleOrDefault().PrivateKeyEncrypted;
-                DumpSqliteColumn(nameof(PrivateKeyEncrypted), PrivateKeyEncrypted);
+                    DumpSqliteColumn(nameof(PasswordHash), PasswordHash);
+                    DumpSqliteColumn(nameof(IV), IV);
+                    DumpSqliteColumn(nameof(MasterKey), MasterKey);
+                }
+                {
+                    WriteTableName("Account");
+                    var PublicKeyHash = ctx.Accounts.SingleOrDefault().PublicKeyHash;
+                    DumpSqliteColumn(nameof(PublicKeyHash), PublicKeyHash);
+                    var PrivateKeyEncrypted = ctx.Accounts.SingleOrDefault().PrivateKeyEncrypted;
+                    DumpSqliteColumn(nameof(PrivateKeyEncrypted), PrivateKeyEncrypted);
+                }
+                {
+                    WriteTableName("Address");
+                    var ScriptHash = ctx.Addresses.SingleOrDefault().ScriptHash;
+                    DumpSqliteColumn(nameof(ScriptHash), ScriptHash);
+                }
+                {
+                    WriteTableName("Contract");
+                    var ScriptHash = ctx.Contracts.SingleOrDefault().ScriptHash;
+                    DumpSqliteColumn(nameof(ScriptHash), ScriptHash);
+                    var PublicKeyHash = ctx.Contracts.SingleOrDefault().PublicKeyHash;
+                    DumpSqliteColumn(nameof(PublicKeyHash), PublicKeyHash);
+                    var RawData = ctx.Contracts.SingleOrDefault().RawData;
+                    DumpSqliteColumn(nameof(RawData), RawData);
+                }
             }
         }
 
@@ -122,9 +139,10 @@ namespace NeoWalletDump
 
         private static void DumpSqliteColumn(string name, byte[] bytes)
         {
-            Console.WriteLine(name + ") Length:"+bytes.Length);
+            Console.WriteLine(name + ")");
+            Console.WriteLine("Length:"+bytes.Length);
             var utf8 = Encoding.UTF8.GetString(bytes);
-            Console.Write("UTF8: " + utf8); // Todo: It doesn't work sometimes. Maybe because of control code such as BS in utf8
+            Console.WriteLine("UTF8: " + utf8); // Todo: It doesn't work sometimes. Maybe because of control code such as BS in utf8
             var hex = BitConverter.ToString(bytes).Replace("-", string.Empty);
             Console.WriteLine("HEX: 0x" + hex);
             Console.WriteLine();

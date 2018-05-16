@@ -92,12 +92,13 @@ namespace NeoWalletDump
                 return;
             }
             var db3Path = args[0];
+            byte[] passwordKey = args[1].ToAesKey();
 
             SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_e_sqlite3());
 
-            byte[] passwordKey = args[1].ToAesKey();
-            using (WalletDataContext ctx = new WalletDataContext(args[0]))
+            using (WalletDataContext ctx = new WalletDataContext(db3Path))
             {
+                WriteTableName("Key");
                 var PasswordHash = ReadSqlitItem(ctx, "PasswordHash");
                 var IV = ReadSqlitItem(ctx, "IV");
                 var MasterKey = ReadSqlitItem(ctx, "MasterKey").AesDecrypt(passwordKey, IV);
@@ -105,12 +106,28 @@ namespace NeoWalletDump
                 DumpSqliteColumn(nameof(PasswordHash), PasswordHash);
                 DumpSqliteColumn(nameof(IV), IV);
                 DumpSqliteColumn(nameof(MasterKey), MasterKey);
+
+                WriteTableName("Account");
+                var PublicKeyHash = ctx.Accounts.SingleOrDefault().PublicKeyHash;
+                DumpSqliteColumn(nameof(PublicKeyHash), PublicKeyHash);
+                var PrivateKeyEncrypted = ctx.Accounts.SingleOrDefault().PrivateKeyEncrypted;
+                DumpSqliteColumn(nameof(PrivateKeyEncrypted), PrivateKeyEncrypted);
             }
         }
 
-        private static void DumpSqliteColumn(string name, byte[] PasswordHash)
+        private static void WriteTableName(string name)
         {
-            Console.WriteLine(name + ": " + Encoding.UTF8.GetString(PasswordHash));
+            Console.WriteLine($"<<{name} Table>>");
+        }
+
+        private static void DumpSqliteColumn(string name, byte[] bytes)
+        {
+            Console.WriteLine(name + ") Length:"+bytes.Length);
+            var utf8 = Encoding.UTF8.GetString(bytes);
+            Console.Write("UTF8: " + utf8); // Todo: It doesn't work sometimes. Maybe because of control code such as BS in utf8
+            var hex = BitConverter.ToString(bytes).Replace("-", string.Empty);
+            Console.WriteLine("HEX: 0x" + hex);
+            Console.WriteLine();
         }
 
         private static byte[] ReadSqlitItem(WalletDataContext ctx, string name)

@@ -110,24 +110,33 @@ namespace NeoWalletDump
                 }
                 {
                     WriteTableName("Account");
-                    var PublicKeyHash = ctx.Accounts.SingleOrDefault().PublicKeyHash;
-                    DumpSqliteColumn(nameof(PublicKeyHash), PublicKeyHash);
-                    var PrivateKeyEncrypted = ctx.Accounts.SingleOrDefault().PrivateKeyEncrypted;
-                    DumpSqliteColumn(nameof(PrivateKeyEncrypted), PrivateKeyEncrypted);
+                    foreach (var x in ctx.Accounts)
+                    {
+                        var PublicKeyHash = x.PublicKeyHash;
+                        DumpSqliteColumn(nameof(PublicKeyHash), PublicKeyHash);
+                        var PrivateKeyEncrypted = x.PrivateKeyEncrypted;
+                        DumpSqliteColumn(nameof(PrivateKeyEncrypted), PrivateKeyEncrypted);
+                    }
                 }
                 {
                     WriteTableName("Address");
-                    var ScriptHash = ctx.Addresses.SingleOrDefault().ScriptHash;
-                    DumpSqliteColumn(nameof(ScriptHash), ScriptHash);
+                    foreach (var x in ctx.Addresses)
+                    {
+                        var ScriptHash = x.ScriptHash;
+                        DumpSqliteColumn(nameof(ScriptHash), ScriptHash);
+                    }
                 }
                 {
                     WriteTableName("Contract");
-                    var ScriptHash = ctx.Contracts.SingleOrDefault().ScriptHash;
-                    DumpSqliteColumn(nameof(ScriptHash), ScriptHash);
-                    var PublicKeyHash = ctx.Contracts.SingleOrDefault().PublicKeyHash;
-                    DumpSqliteColumn(nameof(PublicKeyHash), PublicKeyHash);
-                    var RawData = ctx.Contracts.SingleOrDefault().RawData;
-                    DumpSqliteColumn(nameof(RawData), RawData);
+                    foreach (var x in ctx.Contracts)
+                    {
+                        var ScriptHash = x.ScriptHash;
+                        DumpSqliteColumn(nameof(ScriptHash), ScriptHash);
+                        var PublicKeyHash = x.PublicKeyHash;
+                        DumpSqliteColumn(nameof(PublicKeyHash), PublicKeyHash);
+                        var RawData = x.RawData;
+                        DumpSqliteColumn(nameof(RawData), RawData);
+                    }
                 }
             }
         }
